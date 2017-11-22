@@ -12,6 +12,24 @@ console.log("# ===================================================");
 console.log("# Current process: Logging in to Facebook Messenger.");
 console.log("# ===================================================");
 
+
+
+// Global variables
+
+var researchParticipants  = [];
+var facebookParticipants  = [];
+var formdevUsers          = JSON.parse(fs.readFileSync('formdev.users.json', 'utf8'));
+var disableMessageSending = true;
+
+
+
+
+
+
+
+
+
+
 // Primary Log in - using app state
 login({appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8'))}, (err, api) => {
     if(err) {
@@ -34,13 +52,6 @@ login({appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8'))}, (err, ap
     console.log("Facebook Messenger app state restored.");
     performMainOperations(api);
 });
-
-
-// Global variables
-
-var researchParticipants = [];
-var facebookParticipants = [];
-var formdevUsers = JSON.parse(fs.readFileSync('formdev.users.json', 'utf8'));
 
 // Code
 
@@ -69,25 +80,29 @@ function performMainOperations(api){
 }
 
 function remind(api, message, threadID) {
-	console.log("Sending message... (disabled)");
-	return Rx.Observable.of(threadID);
-
-	console.log("Sending message...");
-	return Rx.Observable.create(obx => {
+	if (disableMessageSending) {
+		console.log("Sending message... (disabled)");
+		return Rx.Observable.of(threadID);
 		
-		api.sendMessage(message, threadID, (err, api) => {
+	} else {
+
+		console.log("Sending message...");
+		return Rx.Observable.create(obx => {
 			
-			console.log(message);
+			api.sendMessage(message, threadID, (err, api) => {
+				
+				console.log(message);
 
-			if (err) {
-				obx.error(err);
-				return console.error(err);
-			}
-			obx.next();
-			obx.complete();
+				if (err) {
+					obx.error(err);
+					return console.error(err);
+				}
+				obx.next();
+				obx.complete();
 
+			});
 		});
-	});
+	}
 }
 
 function messageThoseWhoHaveNotFilledUpTheForm(api) {
@@ -246,7 +261,7 @@ function fbUserIdToFormdevName(id) {
  * @param  {api} Access to the facebook messenger API.
  * @param  {threads} Array containing facebook conversation threads.
  * @param  {size} How many threads were included.
- * @return {void} Writes into the file `fbUserDetailsLastConversations.json`.
+ * @return {void} Writes into the file `last.users.json`.
  */
 function getUserDetailsOfLastConversations(api, threads, size) {
 	
