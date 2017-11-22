@@ -19,54 +19,95 @@ console.log("# ===================================================");
 var researchParticipants  = [];
 var facebookParticipants  = [];
 var formdevUsers          = JSON.parse(fs.readFileSync('formdev.users.json', 'utf8'));
-var disableMessageSending = true;
 
+var filterList = [100000156092486, 100007294003380, 100000028740129, 1789187589, 1392373988];
 
+// Disable/enable flags
+var disableMessageSending = true;		// True if you don't want to send messages; for debugging purposes only.
+var previewMessage = false;				// True if you want to see a preview of the message to be sent.
+var mockLogin = true;					// True if you don't want to perform log in. Useful when utilising file caches.
 
+var performMessengerLoginObx = Rx.Observable.create(obx => {
 
+	if (mockLogin) {
+		console.log("Mocked the Facebook Messenger log in process. Currently on offline mode.");
+		console.log();
+		obx.next(false);
+		obx.complete();
 
+	} else {
 
+		// Primary Log in - using app state
+		login( {appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8')) }, (err, api) => {
+		    
+		    if(err) {
 
+		    	console.log("Logging in to Facebook Messenger using credentials...");
+				var credentials = {email: process.env.FB_USERNAME, password: process.env.FB_PASSWORD};
 
+		    	// If failed - use credentials
+		    	login(credentials, (err, api) => {
+				    if(err) return console.error(err);
 
+				    // Store credentials to app state
+				    fs.writeFileSync('appstate.json', JSON.stringify(api.getAppState()));
 
-// Primary Log in - using app state
-login({appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8'))}, (err, api) => {
-    if(err) {
+				    console.log("Logged in to Facebook Messenger successfully.");
+					console.log();
 
-    	console.log("Logging in to Facebook Messenger using credentials...");
-		var credentials = {email: process.env.FB_USERNAME, password: process.env.FB_PASSWORD};
+				    obx.next(api);
+				    obx.complete();
+				    
+				});
 
-    	// If failed - use credentials
-    	login(credentials, (err, api) => {
-		    if(err) return console.error(err);
+		    	return console.error(err);
+		    }
+		    console.log("Facebook Messenger app state restored.");
+		    console.log("Logged in to Facebook Messenger successfully.");
+			console.log();
 
-		    // Store credentials to app state
-		    fs.writeFileSync('appstate.json', JSON.stringify(api.getAppState()));
-
-		    performMainOperations(api);
+		    obx.next(api);
+			obx.complete();
 		});
+	}
 
-    	return console.error(err);
-    }
-    console.log("Facebook Messenger app state restored.");
-    performMainOperations(api);
 });
+
+
+// public static void main(String[] args) { }
+
+performMessengerLoginObx
+	.subscribe(api => {
+		performMainOperations(api);
+	});
+
+
 
 // Code
 
 function performMainOperations(api){
-	console.log("Logged in to Facebook Messenger successfully.");
-	console.log();
-	
 
-	var size = 80;
-	api.getThreadList(0, size, (err, threads) => {
+	var obx1 = messageThoseWhoHaveNoGdocsObx(api, threads).toArray();
+	var obx2 = messageThoseWhoHaveNotFilledUpTheForm(api).toArray();
+
+	obx1
+		.flatMap(s => obx2)
+		.subscribe(s => {
+
+
+			console.log("# ===================================================");
+			console.log("# Reminders finished.");
+			console.log("# ===================================================");
+			console.log();
+
+		});
+
+	/*api.getThreadList(0, size, (err, threads) => {
 		if (err) return console.err(err);
 		var obx1 = messageThoseWhoHaveNoGdocsObx(api, threads).toArray();
 		var obx2 = messageThoseWhoHaveNotFilledUpTheForm(api).toArray();
 
-		obx1.flatMap(s => obx2)
+		obx2 // .flatMap(s => obx2)
 			.subscribe(s => {
 
 
@@ -76,24 +117,33 @@ function performMainOperations(api){
 				console.log();
 
 			});
-	});
+	});*/
 }
 
 function remind(api, message, threadID) {
-	if (disableMessageSending) {
+	if (filterList.includes(threadID)) {
+		console.log("Ignoring message to be sent because it is in the filter list.")
+	}
+	else if (disableMessageSending || api == false) {
 		console.log("Sending message... (disabled)");
-		return Rx.Observable.of(threadID);
+
+		if (previewMessage)
+			console.log(message);
 		
+		return Rx.Observable.of(threadID);
+
 	} else {
 
 		console.log("Sending message...");
+
 		return Rx.Observable.create(obx => {
 			
 			api.sendMessage(message, threadID, (err, api) => {
 				
-				console.log(message);
+				
 
 				if (err) {
+					console.error(err);
 					obx.error(err);
 					return console.error(err);
 				}
@@ -110,7 +160,6 @@ function messageThoseWhoHaveNotFilledUpTheForm(api) {
 
 	var messageformat = "Hi %NAME%! Friendly and gentle reminder lang to fill up the research form... It takes only 2 minutes! The interview itself takes around 15-20 minutes... Sorry sa kulit ha.. Thank you %NAME%!";
 	
-
 	return loadGoogleSheetsObx()
 		.map(s => s.facebook_user_id)
 		.toArray()
@@ -127,35 +176,33 @@ function messageThoseWhoHaveNotFilledUpTheForm(api) {
 
 			console.log("I've talked to " + formdevUsers.length + " facis in the last 100 conversations.");
 			console.log("Who hasn't registered on my research form yet?")
-
+			
 			return Rx.Observable
 						.from(formdevUsers)
 						.filter(s => {
-							var isNotRegistered = registeredUsers.includes(s.id) == false;
-
+							var isRegistered = registeredUsers.includes(s.id);
+							
 							var isNotMe = s.name != 'Darren Sapalo';
 
-							return isNotRegistered && isNotMe;
+							return !isRegistered && isNotMe;
 						})
+						.do(s => {
+							console.log()
+							console.log(" - Sending to " + s.name + " because he/she is not yet registered");
+						})
+						.flatMap(user => {
 
-		})
-		.do(s => {
-			console.log()
-			console.log(" - " + s.name);
-		})
-		.flatMap(user => {
-
-			var message = messageformat.replace('%NAME%', user.nickname);
-
-			return remind(api, message, user.id);
+							var message = messageformat.replace(/%NAME%/g, user.nickname);
+							
+							return remind(api, message, user.id);
+						})
+						.delay(2000)
 		})
 		.toArray()
 		.do(s => {
 			console.log();
 			console.log("Total of " + s.length + " unregistered facis reminded.");
 		});
-	
-
 
 }
 
@@ -184,11 +231,12 @@ function messageThoseWhoHaveNoGdocsObx(api, threads) {
 		// Send a new message
 		.flatMap(user => {
 		
-
+			console.log(user);
 			var message = messageformat.replace('%NAME%', user.nickname);
 			
-			return remind(api, message, user.thread);
+			return remind(api, message, user.threadID);
 		})
+		.delay(2000)
 
 
 		.do(user => {
@@ -318,6 +366,19 @@ function getUserDetailsOfLastConversations(api, threads, size) {
  */
 function loadGoogleSheetsObx() {
 
+	var loadCache = true;
+
+	if (loadCache) {
+
+
+		return Rx.Observable.create(obx => {
+
+			researchParticipants = JSON.parse(fs.readFileSync('google.sheets.json', 'utf8'));
+			researchParticipants.forEach(s => obx.next(s));
+			obx.complete();
+		});
+	}
+
 	return Rx.Observable.create(obx => {
 
 		var options = {
@@ -325,6 +386,8 @@ function loadGoogleSheetsObx() {
 
 			callback: (participants, tabletop) => {
 				researchParticipants = participants;
+
+				fs.writeFileSync('google.sheets.json', JSON.stringify(researchParticipants));
 
 				console.log("Google sheets has a total of " + researchParticipants.length + " entries.");
 				console.log();

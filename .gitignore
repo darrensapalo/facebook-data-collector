@@ -67,3 +67,4 @@ appstate.json
 # Formdev and personal related stuff
 formdev.users.json
 last.users.json
+google.sheets.json
