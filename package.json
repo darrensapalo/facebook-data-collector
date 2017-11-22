@@ -1,0 +1,23 @@
+{
+  "name": "data-collector",
+  "version": "1.0.0",
+  "description": "Works with Facebook Messenger to aid you in messaging a lot of people.",
+  "main": "driver.js",
+  "dependencies": {
+    "facebook-chat-api": "^1.4.0",
+    "tabletop": "^1.5.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "facebook",
+    "messenger",
+    "chat",
+    "data",
+    "collection"
+  ],
+  "author": "Darren Karl A. Sapalo",
+  "license": "ISC"
+}
