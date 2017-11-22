@@ -28,7 +28,7 @@ I recommend you fetch the user IDs and/or thread IDs you need first. You can do 
 
 `cp test.env .env`
 
-#### Step 3. View and copy the structure of the Google Docs. Adjust as necessary.
+#### Step 3. View and copy the structure of the [sample Google Docs](https://docs.google.com/spreadsheets/d/1rV18RdRyzRfOuoSAhs4LAKNlHDNQ3OpAv9DLznAyq_E/edit?usp=sharing). Adjust as necessary.
 
 #### Step 4. Run the driver code.
 
