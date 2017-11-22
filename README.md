@@ -1,19 +1,22 @@
 # facebook-data-collector
 I had to message so many people in Facebook messenger (40+ people) repeatedly (3x a day) so I automated it.
 
-This app logs in to your facebook account, cross references a specified public Google Sheets form, and can perform
-messaging depending on the state of the respondents.
-
 ## What can it do?
 
-This app can detect the user IDs of the people you talk to in facebook messenger, and the thread IDs of the conversations.
-Given the user ID or the thread ID in facebook messenger, you can perform an API call to send or listen to messages.
+This app logs in to your facebook account, cross references a specified public Google Sheets form to determine what kind of message to send to a person, and then sends a message using your personal Facebook account to the said person depending on the state defined by the Google Sheets form.
 
-> I recommend you fetch the user IDs and/or thread IDs you need first. You can do this by using the `getUserDetailsOfLastConversations` function.
-Once you have the threadIDs (or user IDs in the case of a private 1-to-1 message), persist it in the Google Sheets so you don't have to do fetch
-and compute this repeatedly.
+## Example scenario
 
+For example, I have a Google Sheets form that lists all the people that have registered through my Google Forms. However, I need to get more people to fill up my form. 
 
+So I have two messages:
+
+1. The registered ones (those who answered Google Forms) are reminded to answer a questionnaire.
+2. The non registered ones (whose user IDs I know from facebook, but have not yet answered Google Forms) are reminded to answer the Google Form.
+
+## Notes
+
+I recommend you fetch the user IDs and/or thread IDs you need first. You can do this by using the `getUserDetailsOfLastConversations` function. Once you have the threadIDs (or user IDs in the case of a private 1-to-1 message), persist it in the Google Sheets so you don't have to do fetch and compute this repeatedly.
 
 ## Installation
 
@@ -25,7 +28,7 @@ and compute this repeatedly.
 
 `cp test.env .env`
 
-#### Step 3. View and copy the structure of the Google Docs. Adjust as necessary.
+#### Step 3. View and copy the structure of the [sample Google Docs](https://docs.google.com/spreadsheets/d/1rV18RdRyzRfOuoSAhs4LAKNlHDNQ3OpAv9DLznAyq_E/edit?usp=sharing). Adjust as necessary.
 
 #### Step 4. Run the driver code.
 
@@ -48,4 +51,11 @@ This method sends a specified message to the given threadID using the API. Note 
 in order to perform the send message HTTP request.
 
 
+# Dependencies
 
+This uses the following libraries:
+1. [facebook-chat-api](https://github.com/Schmavery/facebook-chat-api/)
+2. [tabletop.js](https://github.com/jsoma/tabletop)
+3. [rxjs](https://github.com/ReactiveX/rxjs)
+4. [moment.js](https://github.com/moment/moment)
+5. [dotenv](https://www.npmjs.com/package/dotenv)
