@@ -57,5 +57,13 @@ typings/
 # dotenv environment variables file
 .env
 
-# Ignore facebook app state
+# ================================================
+# Darren's app related stuff
+# ================================================
+
+# Ignore facebook app log in state
 appstate.json
+
+# Formdev and personal related stuff
+formdev.users.json
+last.users.json

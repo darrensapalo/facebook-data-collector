@@ -40,7 +40,7 @@ login({appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8'))}, (err, ap
 
 var researchParticipants = [];
 var facebookParticipants = [];
-var formdevUsers = JSON.parse(fs.readFileSync('facebookFormdevUserDetails.json', 'utf8'));
+var formdevUsers = JSON.parse(fs.readFileSync('formdev.users.json', 'utf8'));
 
 // Code
 
@@ -293,7 +293,7 @@ function getUserDetailsOfLastConversations(api, threads, size) {
 			console.log("" + pair.name + " [" + pair.id + "]")
 			facebookParticipants.push(pair);
 		}, err => console.log(err), () => {
-			fs.writeFileSync('fbUserDetailsLastConversations.json', JSON.stringify(facebookParticipants, null, 2));
+			fs.writeFileSync('last.users.json', JSON.stringify(facebookParticipants, null, 2));
 		});
 }
 
