@@ -1,8 +1,14 @@
 # facebook-data-collector
 I had to message so many people in Facebook messenger (40+ people) repeatedly (3x a day) so I automated it.
 
-This app logs in to your facebook account, cross references a specified public Google Sheets form, and can perform
-messaging depending on the state of the respondents.
+This app logs in to your facebook account, cross references a specified public Google Sheets form to determine what kind of message to send to a person, and then sends a message using your personal Facebook account to the said person depending on the state defined by the Google Sheets form.
+
+For example, I have a Google Sheets form that lists all the people that have registered through my Google Forms. However, I need to get more people to fill up my form. 
+
+So I have two messages:
+
+1. The registered ones (those who answered Google Forms) are reminded to answer a questionnaire.
+2. The non registered ones (whose user IDs I know from facebook, but have not yet answered Google Forms) are reminded to answer the Google Form.
 
 ## What can it do?
 
