@@ -1,23 +1,32 @@
+const moment     = require('moment');
 const fs         = require('fs');
 const login      = require("facebook-chat-api");
 const Rx         = require('rxjs/Rx');
 const datasource = require('./formdev-datasources.js')
+const dotenv     = require('dotenv').config();
 
 
-var filterList = [100000156092486, 100007294003380, 1392373988];
 
 module.exports = {
 
+	filterList: ['100000156092486', '100007294003380', '1392373988'],
+
 	// True if you don't want to send messages; for debugging purposes only.
-	disableMessageSending: true,
+	disableMessageSending: false,
 
 	// True if you want to see a preview of the message to be sent.
     previewMessage: false,
 
 
-	remind: function(api, message, threadID) {
-	    if (filterList.includes(threadID)) {
-	        console.log("Ignoring message to be sent because it is in the filter list.")
+	remind: function(api, message, threadID, delay) {
+	    if (this.filterList.includes(threadID)) {
+	        console.log("Cancelling message to be sent; He/she is in the filter list.");
+	        return Rx.Observable.of();
+	    }
+	    else if (delay instanceof moment && moment().isBefore(delay)) {
+	    	console.log("Message delayed. Will send " + delay.fromNow() + ".");
+	    	console.log();
+	    	return Rx.Observable.of();
 	    }
 	    else if (this.disableMessageSending || api == false) {
 	        console.log("Sending message... (disabled)");
@@ -27,7 +36,8 @@ module.exports = {
 	        
 	        return Rx.Observable.of(threadID);
 
-	    } else {
+	    } 
+	     else {
 
 	        console.log("Sending message...");
 
@@ -52,7 +62,7 @@ module.exports = {
 
 	thoseWhoHaveNotFilledUpTheFormObx: function(api, users) {
 
-	    var messageformat = "Hi %NAME%! Friendly and gentle reminder lang to fill up the research form... It takes only 2 minutes! The interview itself takes around 15-20 minutes... Sorry sa kulit ha.. Thank you %NAME%!";
+	    var messageformat = process.env.MESSAGE_NOT_YET_REGISTERED;
 	    
 
 	    return Rx.Observable.from(users)
@@ -83,13 +93,16 @@ module.exports = {
 	                        })
 	                        .do(s => {
 	                            console.log()
-	                            console.log(" - Sending to " + s.name + " because he/she is not yet registered");
+	                            console.log(" - Sending to " + s.name + " [" + s.id + "] because he/she is not yet registered.");
 	                        })
 	                        .flatMap(user => {
 
 	                            var message = messageformat.replace(/%NAME%/g, user.nickname);
 	                            
-	                            return this.remind(api, message, user.id);
+	                            if (user.message_on)
+	            					user.delay = moment(user.message_on, "YYYY-MM-DD HH:mm:ss");
+	            				
+	                            return this.remind(api, message, user.id, user.delay);
 	                        })
 	        })
 	        .toArray()
@@ -116,7 +129,7 @@ module.exports = {
 	    console.log("# ===================================================");
 	    console.log();
 
-	    var messageformat = "Hi %NAME%! Friendly and gentle reminder lang to answer the interview questions... It ought to take a short time lang, probably around 15-20 minutes... Thank you!";
+	    var messageformat = process.env.MESSAGE_NOT_YET_SHARED_GDOCS;
 	    console.log("Message: " + messageformat);
 	    console.log();
 
@@ -141,9 +154,12 @@ module.exports = {
 	        // Send a new message
 	        .flatMap(user => {
 	        
-	            var message = messageformat.replace('%NAME%', user.nickname);
+	            var message = messageformat.replace(/%NAME%/g, user.nickname);
 	            
-	            return this.remind(api, message, user.threadID)
+	            if (user.message_on)
+	            	user.delay = moment(user.message_on, "YYYY-MM-DD HH:mm:ss");
+	            
+	            return this.remind(api, message, user.threadID, user.delay)
 		            .do(user => {
 			            console.log("Sent!\n");
 			        });

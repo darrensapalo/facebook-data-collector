@@ -10,7 +10,7 @@ const Rx       = require('rxjs/Rx');
 var offlineMode = {
 
     // Will skip facebook login. Result `api` will be boolean false instead.
-    noFacebookLogin: true
+    noFacebookLogin: false
 }
 
 

@@ -41,8 +41,6 @@ Rx.Observable.zip(fbapi.loginObx(), datasource.googleSheetsObx())
  */
 function performMainOperations(api, users){
 
-
-
     // Get the last 100 threads using the API, then message those participants who have no gdocs.
     var obx1 = datasource.fbConversationsObx(api, 100)
         .flatMap(threads => messaging.thoseWhoHaveNoGdocsObx(api, users, threads).toArray())
@@ -57,31 +55,45 @@ function performMainOperations(api, users){
             console.log("# Reminders finished.");
             console.log("# ===================================================");
             console.log();
-            console.log("Report: ");
-            console.log("  " + messaging.facisOnSight + " facis to be reached via Facebook Messenger.");
-            console.log();
-
-            var totalRegistered = messaging.facisOnSight - messaging.countFacisNotRegistered;
-            var percent = totalRegistered / messaging.facisOnSight * 100;
-
-            console.log("  " + totalRegistered + " facis registered. (Progress is " + percent.toFixed(2) + "%)");
-            console.log("  " + messaging.countFacisNotRegistered + " facis not registered, to be reminded.");
-            console.log();
-
-            var totalWithGdocs = totalRegistered - messaging.countFacisNoGDocs;
-            percent = totalWithGdocs / totalRegistered * 100;
             
-            console.log("  " + totalWithGdocs + " facis with GDocs. (Progress is " + percent.toFixed(2) + "%)");
-            console.log("  " + messaging.countFacisNoGDocs + " facis without GDocs, to be reminded.");
-            console.log();
-            console.log();
-
-            console.log("Interviews: ")
-
-            console.log("   " + totalWithGdocs + " * 4 = " + (totalWithGdocs * 4) + " interview sets. (Assuming each person answered all the interview questions)");
+            generateReport();
 
         });
 }
+
+function generateReport() {
+
+    console.log("Report: ");
+    console.log("  " + messaging.facisOnSight + " facis to be reached via Facebook Messenger.");
+    console.log();
+
+    var totalRegistered = messaging.facisOnSight - messaging.countFacisNotRegistered;
+    var percent = totalRegistered / messaging.facisOnSight * 100;
+
+    console.log("  " + totalRegistered + " facis registered. (Progress is " + percent.toFixed(2) + "%)");
+    console.log("  " + messaging.countFacisNotRegistered + " facis not registered, to be reminded.");
+    console.log();
+
+    var totalWithGdocs = totalRegistered - messaging.countFacisNoGDocs;
+    percent = totalWithGdocs / totalRegistered * 100;
+
+    console.log("  " + totalWithGdocs + " facis with GDocs. (Progress is " + percent.toFixed(2) + "%)");
+    console.log("  " + messaging.countFacisNoGDocs + " facis without GDocs, to be reminded.");
+    console.log();
+    console.log();
+
+    console.log("Interviews: ")
+
+    console.log("   4 interview sets per person (Assuming each person answered all).");
+    console.log("   " + totalWithGdocs + " facis with GDocs.");
+    console.log();
+    console.log("   " + totalWithGdocs + " * 4 = " + (totalWithGdocs * 4) + " currently available interview sets.");
+
+    console.log();
+    console.log();
+
+}
+
 
 String.prototype.toUser = function() {
     var id = this;
@@ -92,4 +104,3 @@ String.prototype.toUser = function() {
     }
     return false;
 }
-

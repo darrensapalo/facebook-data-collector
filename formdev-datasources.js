@@ -77,6 +77,7 @@ module.exports = {
 		        	return console.err(err);
 		        }
 
+		        fs.writeFileSync('conversations.json', JSON.stringify(threads, null, 2));
 		        this.conversations = threads;
 
 		        obx.next(threads);
