@@ -1,77 +1,129 @@
-const fs       = require('fs');
-const login    = require("facebook-chat-api");
-const Tabletop = require("./tabletop.js");
-const Rx       = require('rxjs/Rx');
+const fs       = require('fs')
+const login    = require("facebook-chat-api")
+const Rx       = require('rxjs/Rx')
+const readline = require("readline")
+const logger   = require('./logger.js')
 
+var rl = readline.createInterface({
+	input: process.stdin,
+	output: process.stdout
+  })
 
-// ==============================================================================================
-// Offline mode configuration
-// ==============================================================================================
-var offlineMode = {
-
-    // Will skip facebook login. Result `api` will be boolean false instead.
-    noFacebookLogin: false
+const loginOptions = {
+	logLevel: 'error'
 }
 
-
 module.exports = {
+	// Determines verbosity of log in mechanism.
+	verbose: false,
+
+	offlineMode: {
+
+		// Will skip facebook login. Result `api` will be boolean false instead.
+		noFacebookLogin: false
+	
+	}, 
 
 	/**
 	 * Logs in to messenger.
-	 * {mockLogin} boolean to determine if log in should be mocked.
-	 * @return A single emission which is the API object for accessing facebook messenger.
+	 * 
+	 * @return An observable stream with a single emission, which is the API object for accessing facebook messenger.
 	 */
-	loginObx: function() {
+	login: function() {
 
 		return Rx.Observable.create(obx => {
+			logger.verbose("Logging in to Facebook Messenger...")
 
-			console.log("# ===================================================");
-			console.log("# Current process: Logging in to Facebook Messenger.");
-			console.log("# ===================================================");
+			if (this.offlineMode.noFacebookLogin)
+			{
+				logger.verbose("Mocked the Facebook Messenger log in process. Currently on offline mode. API is not available.")
+				obx.next(false)
+				obx.complete()
 
-			if (offlineMode.noFacebookLogin) {
-				console.log("Mocked the Facebook Messenger log in process. Currently on offline mode. API is not available.");
-				console.log();
-				obx.next(false);
-				obx.complete();
+			} 
+			else if (fs.existsSync('appstate.json')) 
+			{
 
-			} else {
+				state = {
+					appState: JSON.parse(
+						fs.readFileSync('appstate.json', 'utf8')
+					)
+				}
 
 				// Primary Log in - using app state
-				login( {appState: JSON.parse(fs.readFileSync('appstate.json', 'utf8')) }, (err, api) => {
+				login( state, loginOptions, (err, api) => {
 				    
 				    if(err) {
+						logger.warn("Failed to log in using existing app state.\n")
+						obx.error(err)
+						return
+					}
+					
+				    logger.verbose("Facebook Messenger app state restored.")
+				    logger.verbose("Logged in to Facebook Messenger successfully.")
 
-				    	console.log("Logging in to Facebook Messenger using credentials...");
-						var credentials = {email: process.env.FB_USERNAME, password: process.env.FB_PASSWORD};
+				    obx.next(api)
+					obx.complete()
+				})
 
-				    	// If failed - use credentials
-				    	login(credentials, (err, api) => {
-						    if(err) return console.error(err);
-
-						    // Store credentials to app state
-						    fs.writeFileSync('appstate.json', JSON.stringify(api.getAppState()));
-
-						    console.log("Logged in to Facebook Messenger successfully.");
-							console.log();
-
-						    obx.next(api);
-						    obx.complete();
-						    
-						});
-
-				    	return console.error(err);
-				    }
-				    console.log("Facebook Messenger app state restored.");
-				    console.log("Logged in to Facebook Messenger successfully.");
-					console.log();
-
-				    obx.next(api);
-					obx.complete();
-				});
+			} else {
+				obx.error('App state does not yet exist.')
 			}
 
-		});
+		})
+		.catch(error => {
+			
+			logger.error(`First try at logging in failed. Error: ${error}\n`)
+
+			let credentials = {
+				email: process.env.FB_USERNAME, 
+				password: process.env.FB_PASSWORD
+			}
+
+			return Rx.Observable.create(innerObx => {
+
+				logger.verbose("Attemping to log in using credentials.")
+				logger.verbose(credentials)
+
+				// If failed - use credentials
+				login(credentials, loginOptions, (err, api) => {
+
+					if(!err) {
+						// Store credentials to app state
+						fs.writeFileSync(
+							'appstate.json', 
+							JSON.stringify(api.getAppState())
+						)
+						
+						logger.info('Successfully logged in. Facebook API is available.')
+
+						innerObx.next(api)
+						innerObx.complete()
+						return		
+					}
+
+					switch (err.error) {
+						
+						case 'login-approval':
+
+							logger.verbose('Enter 2FA code > ');
+							
+							rl.on('line', (line) => {
+								resu = err.continue(line)
+								rl.close()
+							})
+
+							break;
+						
+						default:
+							innerObx.error(err);
+					}
+
+				})
+
+			})
+
+		})
 	},
 
 	/**
