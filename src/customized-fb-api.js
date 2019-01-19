@@ -1,17 +1,19 @@
-const fs       = require('fs')
-const login    = require("facebook-chat-api")
-const Rx       = require('rxjs/Rx')
-const readline = require("readline")
-const logger   = require('./logger.js')
+const fs       = require('fs');
+const login    = require("facebook-chat-api");
+const Rx       = require('rxjs/Rx');
+const readline = require("readline");
+const logger   = require('logger');
 
-var rl = readline.createInterface({
+const dotenv     = require('dotenv').config();
+
+const rl = readline.createInterface({
 	input: process.stdin,
 	output: process.stdout
-  })
+  });
 
 const loginOptions = {
 	logLevel: 'error'
-}
+};
 
 module.exports = {
 	// Determines verbosity of log in mechanism.
@@ -32,48 +34,48 @@ module.exports = {
 	login: function() {
 
 		return Rx.Observable.create(obx => {
-			logger.verbose("Logging in to Facebook Messenger...")
+			logger.verbose("Logging in to Facebook Messenger...");
 
-			if (this.offlineMode.noFacebookLogin)
+			if (process.env.NO_FACEBOOK_LOGIN)
 			{
-				logger.verbose("Mocked the Facebook Messenger log in process. Currently on offline mode. API is not available.")
-				obx.next(false)
-				obx.complete()
+				logger.verbose("Mocked the Facebook Messenger log in process. Currently on offline mode. API is not available.");
+				obx.next(false);
+				obx.complete();
 
 			} 
-			else if (fs.existsSync('appstate.json')) 
+			else if (fs.existsSync('./static/appstate.json'))
 			{
 
 				state = {
 					appState: JSON.parse(
-						fs.readFileSync('appstate.json', 'utf8')
+						fs.readFileSync('./static/appstate.json', 'utf8')
 					)
-				}
+				};
 
 				// Primary Log in - using app state
 				login( state, loginOptions, (err, api) => {
 				    
 				    if(err) {
-						logger.warn("Failed to log in using existing app state.\n")
-						obx.error(err)
+						logger.warn("Failed to log in using existing app state.\n");
+						obx.error(err);
 						return
 					}
 					
-				    logger.verbose("Facebook Messenger app state restored.")
-				    logger.verbose("Logged in to Facebook Messenger successfully.")
+				    logger.verbose("Facebook Messenger app state restored.");
+				    logger.verbose("Logged in to Facebook Messenger successfully.");
 
-				    obx.next(api)
-					obx.complete()
+				    obx.next(api);
+					obx.complete();
 				})
 
 			} else {
-				obx.error('App state does not yet exist.')
+				obx.error('App state does not yet exist.');
 			}
 
 		})
 		.catch(error => {
 			
-			logger.error(`First try at logging in failed. Error: ${error}\n`)
+			logger.error(`First try at logging in failed. Error: ${error}\n`);
 
 			let credentials = {
 				email: process.env.FB_USERNAME, 
@@ -82,8 +84,8 @@ module.exports = {
 
 			return Rx.Observable.create(innerObx => {
 
-				logger.verbose("Attemping to log in using credentials.")
-				logger.verbose(credentials)
+				logger.verbose("Attemping to log in using credentials.");
+				logger.verbose(credentials);
 
 				// If failed - use credentials
 				login(credentials, loginOptions, (err, api) => {
@@ -95,10 +97,10 @@ module.exports = {
 							JSON.stringify(api.getAppState())
 						)
 						
-						logger.info('Successfully logged in. Facebook API is available.')
+						logger.info('Successfully logged in. Facebook API is available.');
 
-						innerObx.next(api)
-						innerObx.complete()
+						innerObx.next(api);
+						innerObx.complete();
 						return		
 					}
 
@@ -109,9 +111,9 @@ module.exports = {
 							logger.verbose('Enter 2FA code > ');
 							
 							rl.on('line', (line) => {
-								resu = err.continue(line)
+								resu = err.continue(line);
 								rl.close()
-							})
+							});
 
 							break;
 						
@@ -127,10 +129,10 @@ module.exports = {
 	},
 
 	/**
-	 * @param  {api} Access to the facebook messenger API.
-	 * @param  {threads} Array containing facebook conversation threads.
-	 * @param  {size} How many threads were included.
-	 * @return {void} Writes into the file `last.users.json`.
+	 * @return {Observable<any>} Writes into the file `last.users.json`.
+	 * @param api - something
+	 * @param threads - okay
+	 * @param size
 	 */
 	getUserDetailsOfLastConversationsObx: function(api, threads, size) {
     

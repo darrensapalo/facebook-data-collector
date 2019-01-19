@@ -1,5 +1,5 @@
-const FBConversation = require('./datasources/facebook/FBConversation')
-const User = require('./datasources/facebook/User')
+const FBConversation = require('./models/FBConversation')
+const User = require('./models/User')
 const GoogleSheets = require('./datasources/gsheets/GoogleSheets')
 
 module.exports = {

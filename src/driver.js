@@ -1,12 +1,11 @@
-const Rx         = require('rxjs/Rx')
-const fbapi      = require('./customized-fb-api.js')
-const messaging  = require('./formdev-messaging.js')
-const logger     = require('./logger.js')
-const { table }  = require('table')
+const Rx         = require('rxjs/Rx');
+const fbapi      = require('./customized-fb-api.js');
+const messaging  = require('./formdev-messaging.js');
+const logger     = require('src/logger');
+const { table }  = require('table');
 
-const { User } = require('./datasources/facebook/User')
-const { FBConversation } = require('./datasources/facebook/FBConversation')
-const { GoogleSheets } = require('./datasources/gsheets/GoogleSheets')
+const { User } = require('./models/User');
+const { FBConversation } = require('./models/FBConversation');
 
 let mssgr = {
     fb: {},

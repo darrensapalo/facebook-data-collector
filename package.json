@@ -2,7 +2,7 @@
   "name": "data-collector",
   "version": "1.0.0",
   "description": "Works with Facebook Messenger to aid you in messaging a lot of people.",
-  "main": "driver.js",
+  "main": "src/driver.js",
   "dependencies": {
     "ajv": "6.5.5",
     "dotenv": "^6.1.0",

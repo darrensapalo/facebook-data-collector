@@ -68,3 +68,6 @@ appstate.json
 formdev.users.json
 last.users.json
 google.sheets.json
+
+# Idea
+.idea/
