@@ -1,5 +1,5 @@
 # facebook-messenger
-A bootstrapping tool for sending automated messages to people in Facebook Messenger. 
+A scaffolding tool for sending automated messages to people in Facebook Messenger. 
 
 > In my experience, I had to message many people in Facebook messenger (40+ people) repeatedly (3x a day). 
  > Like any sane developer, I automated my process.
