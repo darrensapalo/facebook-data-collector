@@ -4,17 +4,19 @@
   "description": "Works with Facebook Messenger to aid you in messaging a lot of people.",
   "main": "driver.js",
   "dependencies": {
+    "ajv": "6.5.5",
     "dotenv": "^6.1.0",
-    "facebook-chat-api": "^1.6.0",
+    "facebook-chat-api": "^1.6.1",
     "readline": "^1.3.0",
     "rxjs": "^6.3.3",
     "rxjs-compat": "^6.3.3",
     "table": "^5.1.0",
-    "tabletop": "^1.5.2",
-    "winston": "^3.1.0",
-    "ajv": "6.5.5"
+    "winston": "^3.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-flow": "^6.23.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
