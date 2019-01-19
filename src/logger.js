@@ -1,12 +1,14 @@
-const winston = require('winston')
-const { createLogger, format, transports } = require('winston')
-const { combine, timestamp, json, label, printf } = format
+// @flow
+
+const winston = require('winston');
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, json, label, printf } = format;
 
 let cliFormat = format.cli({ 
     colors: { info: 'blue' },
 })
 
-const logger = winston.createLogger({
+const logger : winston.Logger = winston.createLogger({
 	level: 'info',
 	format: combine(timestamp(), json()),
 	transports: [
@@ -36,4 +38,4 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 
-module.exports = logger
+module.exports = logger;

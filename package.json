@@ -4,9 +4,12 @@
   "description": "Works with Facebook Messenger to aid you in messaging a lot of people.",
   "main": "src/driver.js",
   "dependencies": {
+    "airtable": "^0.5.8",
     "ajv": "6.5.5",
+    "axios": "^0.18.0",
     "dotenv": "^6.1.0",
     "facebook-chat-api": "^1.6.1",
+    "moment": "^2.23.0",
     "readline": "^1.3.0",
     "rxjs": "^6.3.3",
     "rxjs-compat": "^6.3.3",
@@ -15,9 +18,15 @@
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "babel-preset-flow": "^6.23.0"
+    "babel-preset-flow": "^6.23.0",
+    "flow-bin": "^0.91.0",
+    "flow-typed": "^2.5.1"
   },
   "scripts": {
+    "start": "node dist/driver.js",
+    "build": "babel src/ -d dist/",
+    "serve": "npm run build && npm start",
+    "flow": "flow",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

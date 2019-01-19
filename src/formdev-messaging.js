@@ -1,9 +1,6 @@
 const moment     = require('moment');
-const fs         = require('fs');
-const login      = require("facebook-chat-api");
 const Rx         = require('rxjs/Rx');
-const datasource = require('./datasources.js');
-const dotenv     = require('dotenv').config();
+const datasource = require('./index.js');
 
 module.exports = {
 

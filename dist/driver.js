@@ -1,11 +1,9 @@
-// @flow
-
 const { zip } = require('rxjs');
-const { Subject }           = require('rxjs/Rx');
-const { multicast, flatMap, tap }         = require('rxjs/operators');
-const fbapi      = require('./datasources/index');
-const logger     = require('./logger');
-const { table }  = require('table');
+const { Subject } = require('rxjs/Rx');
+const { multicast, flatMap, tap } = require('rxjs/operators');
+const fbapi = require('./datasources/index');
+const logger = require('./logger');
+const { table } = require('table');
 
 const FBConversation = require('./models/FBConversation');
 const User = require('./models/User');
@@ -13,17 +11,16 @@ const User = require('./models/User');
 let mssgr = {
     fbapi: null,
     log: logger
-}
+};
 
 fbapi.login({ logLevel: 'error', loginRequired: false }).subscribe(api => {
     mssgr.fbapi = api;
 
-    let conversations$ : Subject = FBConversation.fetchAll(50, {useCache: false })
-        .pipe(multicast(() => new Subject()));
+    let conversations$ = FBConversation.fetchAll(50, { useCache: false }).pipe(multicast(() => new Subject()));
 
     let users$ = conversations$.pipe(flatMap(User.collect));
 
-    zip(conversations$, users$).subscribe((set) => {
+    zip(conversations$, users$).subscribe(set => {
         const conversations = set[0];
         const users = set[1];
 
@@ -65,35 +62,15 @@ function refresh() {
     // )
 }
 
-
-function initialize(){
-    return fbapi.login()
-        .do(api => {
-            logger.verbose(api);
-        })
+function initialize() {
+    return fbapi.login().do(api => {
+        logger.verbose(api);
+    });
 }
 
 function displayMenu() {
-    let data = [
-        ['Keycode', 'Description'],
-        [
-            'refresh', 
-            'Refreshes the list of users, conversations, and googlesheets messages.'
-        ],
-        [
-            'view X', 
-            'Views the list of `users`, `conversations`, or `messages`.'
-        ],
-        [
-            'review', 
-            'Presents a table-view of the target messages to send out. This is configured from Google Sheets.'
-        ],
-        [
-            'send', 
-            'Reviews the target messages and send them.'
-        ]
-    ];
-    
+    let data = [['Keycode', 'Description'], ['refresh', 'Refreshes the list of users, conversations, and googlesheets messages.'], ['view X', 'Views the list of `users`, `conversations`, or `messages`.'], ['review', 'Presents a table-view of the target messages to send out. This is configured from Google Sheets.'], ['send', 'Reviews the target messages and send them.']];
+
     let output = table(data);
     console.log(output);
 }

@@ -1,10 +1,7 @@
-// @flow
 
-type UserID = number;
-type Participant = { id: number, name: string };
-type Participants = Array<Participant>;
 
 const { Observable, from, of, pipe } = require('rxjs');
+
 const { map, flatMap, toArray, reduce, tap } = require('rxjs/operators');
 
 const logger = require('../logger');
@@ -16,11 +13,9 @@ const FBConversation = require('./FBConversation');
 const verbose = true;
 
 class User {
-    id: number;
-    name: string;
 
-    constructor(participant: Participant) {
-        this.id = participant.id
+    constructor(participant) {
+        this.id = participant.id;
         this.name = participant.name;
     }
 
@@ -29,27 +24,21 @@ class User {
      *
      * @returns {Observable<Array<UserID>>} - Emits a list of `UserID`s from the last `size` conversations.
      */
-    static collect(conversations: Array<FBConversation>) : Observable<Array<User>>{
-        return from(conversations)
-            .pipe(
-                flatMap(conversation => from(conversation.participants)),
-                map(participant => [new User(participant)]),
-                reduce((prev: Participants, current: Participants, index: number, array: Participants) => {
-                    let currentParticipant : Participant = current[0];
+    static collect(conversations) {
+        return from(conversations).pipe(flatMap(conversation => from(conversation.participants)), map(participant => [new User(participant)]), reduce((prev, current, index, array) => {
+            let currentParticipant = current[0];
 
-                    // If not found
-                    if (!prev.find(p => p.id === currentParticipant.id)) {
-                        prev.push(currentParticipant);
-                        return prev;
-                    }
+            // If not found
+            if (!prev.find(p => p.id === currentParticipant.id)) {
+                prev.push(currentParticipant);
+                return prev;
+            }
 
-                    return prev;
-                }),
-                tap(User.persistData)
-            );
+            return prev;
+        }), tap(User.persistData));
     }
 
-    static persistData(users: Array<User>) : void {
+    static persistData(users) {
 
         if (verbose) {
             global.mssgr.log.verbose('Attempting to persist [User] data to cache.');
@@ -62,19 +51,13 @@ class User {
         if (verbose) {
             global.mssgr.log.verbose('Successfully persisted [User] data.');
         }
-
     }
 
-
-    static getAll() : Observable<Array<User>> {
+    static getAll() {
 
         let source$ = from(axios.get(API.AirTable.LectorsAndCommentators));
 
-        return source$.pipe(
-            flatMap(of),
-            map(lector => [])
-        );
-
+        return source$.pipe(flatMap(of), map(lector => []));
     }
 
     // static get(id, cache) {
