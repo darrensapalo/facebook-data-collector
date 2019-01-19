@@ -24,6 +24,10 @@ state. From Airtable, you will be able to configure what messages to send to whi
 
 The source code is open for you to review. Specifically, see `.env` file and `src/datasources/index`.
 
+## Rationale and Future Plans
+
+See the [wiki](https://github.com/darrensapalo/facebook-data-collector/wiki).
+
 ## App Dependencies
 
 This uses the following libraries:
