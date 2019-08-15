@@ -1,7 +1,5 @@
-declare module NodeJS {
-  export type FacebookMessengerAPI  = any;
-
-  interface Global {
-    mssgr: FacebookMessengerAPI;
-  }
+import Global = NodeJS.Global;
+export type FacebookMessengerAPI = any;
+export interface PersonalGlobal extends Global {
+  mssgr: FacebookMessengerAPI;
 }

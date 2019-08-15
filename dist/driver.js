@@ -4,29 +4,27 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var rxjs_1 = require("rxjs");
-var Rx_1 = require("rxjs/Rx");
 var operators_1 = require("rxjs/operators");
 var index_1 = __importDefault(require("./datasources/index"));
 var logger_1 = __importDefault(require("./logger"));
 var table_1 = require("table");
-var FBConversation = require('./models/FBConversation');
-var User = require('./models/User');
+var FBConversation_1 = __importDefault(require("./models/FBConversation"));
+var User_1 = __importDefault(require("./models/User"));
 var mssgr = {
     fbapi: null,
     log: logger_1.default
 };
-index_1.default.login({ logLevel: 'error', loginRequired: false }).subscribe(function (api) {
+index_1.default.login({ logLevel: "error", loginRequired: false }).subscribe(function (api) {
     mssgr.fbapi = api;
-    var conversations$ = FBConversation.fetchAll(50, { useCache: false })
-        .pipe(operators_1.multicast(function () { return new Rx_1.Subject(); }));
-    var users$ = conversations$.pipe(operators_1.flatMap(User.collect));
+    var conversations$ = FBConversation_1.default.fetchAll(50, { useCache: false }).pipe(operators_1.publish());
+    var users$ = conversations$.pipe(operators_1.flatMap(User_1.default.collect));
     rxjs_1.zip(conversations$, users$).subscribe(function (set) {
         var conversations = set[0];
         var users = set[1];
         logger_1.default.info("Conversations found: " + conversations.length);
         logger_1.default.info("Users found: " + users.length);
     }, function (err) {
-        logger_1.default.error('Oof.');
+        logger_1.default.error("Oof.");
         logger_1.default.error(err);
     });
     conversations$.connect();
@@ -54,30 +52,23 @@ function refresh() {
     // )
 }
 function initialize() {
-    return index_1.default.login()
-        .do(function (api) {
+    return index_1.default.login().pipe(operators_1.tap(function (api) {
         logger_1.default.verbose(api);
-    });
+    }));
 }
 function displayMenu() {
     var data = [
-        ['Keycode', 'Description'],
+        ["Keycode", "Description"],
         [
-            'refresh',
-            'Refreshes the list of users, conversations, and googlesheets messages.'
+            "refresh",
+            "Refreshes the list of users, conversations, and googlesheets messages."
         ],
+        ["view X", "Views the list of `users`, `conversations`, or `messages`."],
         [
-            'view X',
-            'Views the list of `users`, `conversations`, or `messages`.'
+            "review",
+            "Presents a table-view of the target messages to send out. This is configured from Google Sheets."
         ],
-        [
-            'review',
-            'Presents a table-view of the target messages to send out. This is configured from Google Sheets.'
-        ],
-        [
-            'send',
-            'Reviews the target messages and send them.'
-        ]
+        ["send", "Reviews the target messages and send them."]
     ];
     var output = table_1.table(data);
     console.log(output);

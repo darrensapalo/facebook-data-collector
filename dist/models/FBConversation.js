@@ -1,8 +1,10 @@
 "use strict";
-// @flow
-var _a = require('rxjs/Rx'), from = _a.from, Observable = _a.Observable, of = _a.of, throwError = _a.throwError;
-var _b = require('rxjs/operators'), flatMap = _b.flatMap, map = _b.map, reduce = _b.reduce;
-var fs = require('fs');
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+var rxjs_1 = require("rxjs");
+var fs_1 = __importDefault(require("fs"));
 var verbose = true;
 /**
  * Models minimally sufficient information about a facebook conversation.
@@ -26,7 +28,7 @@ var FBConversation = /** @class */ (function () {
         }
         var fileDestination = './static/conversations.json';
         var fileData = JSON.stringify(conversations, null, 2);
-        fs.writeFileSync(fileDestination, fileData);
+        fs_1.default.writeFileSync(fileDestination, fileData);
         if (verbose) {
             global.mssgr.log.verbose('Successfully persisted [FBConversation] data.');
         }
@@ -38,7 +40,7 @@ var FBConversation = /** @class */ (function () {
         if (verbose) {
             global.mssgr.log.verbose('Attempting to read from cache.');
         }
-        var convoData = fs.readFileSync('./static/conversations.json', 'utf8');
+        var convoData = fs_1.default.readFileSync('./static/conversations.json', 'utf8');
         var convos = JSON.parse(convoData);
         return convos;
     };
@@ -51,7 +53,7 @@ var FBConversation = /** @class */ (function () {
      */
     FBConversation.fetchAll = function (size, options) {
         var _this = this;
-        return Observable.create(function (obx) {
+        return rxjs_1.Observable.create(function (obx) {
             if (options && options.useCache) {
                 obx.error({
                     name: 'PreferCache',
@@ -82,10 +84,11 @@ var FBConversation = /** @class */ (function () {
                 global.mssgr.log.error(err);
             }
             if (err.name === 'PreferCache')
-                return of(_this.readCache());
-            return throwError(err);
+                return rxjs_1.of(_this.readCache());
+            return rxjs_1.throwError(err);
         });
     };
     return FBConversation;
 }());
-module.exports = FBConversation;
+exports.FBConversation = FBConversation;
+exports.default = FBConversation;

@@ -8,7 +8,9 @@
     "build": "tsc",
     "clean": "rm -rf dist && mkdir dist",
     "serve": "npm run build && npm start",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "nodemon --config nodemon.config.json",
+    "watch:serve": "node --inspect -r ts-node/register src/driver.ts"
   },
   "dependencies": {
     "airtable": "^0.7.1",
@@ -25,8 +27,11 @@
   },
   "devDependencies": {
     "jest": "^24.8.0",
+    "node-ts": "^5.0.1",
+    "nodemon": "^1.19.1",
     "prettier": "^1.18.2",
     "ts-jest": "^24.0.2",
+    "ts-node": "^8.3.0",
     "typescript": "^3.5.3"
   },
   "keywords": [
