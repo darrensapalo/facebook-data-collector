@@ -1,26 +1,28 @@
-// @flow
+import {PersonalGlobal} from "../@types/global";
 
 type UserID = number;
 type Participant = { id: number, name: string };
 type Participants = Array<Participant>;
 
-const { Observable, from, of, pipe } = require('rxjs');
-const { map, flatMap, toArray, reduce, tap } = require('rxjs/operators');
+import { Observable, from, of, pipe } from 'rxjs';
+import { map, flatMap, toArray, reduce, tap } from 'rxjs/operators';
 
-const logger = require('../logger');
-const fs = require('fs');
-const API = require('../util/API');
-const axios = require('axios');
-const FBConversation = require('./FBConversation');
+import logger from '../logger';
+import fs from 'fs';
+import API from '../util/API';
+import axios from 'axios';
+import FBConversation from './FBConversation';
 
 const verbose = true;
 
-class User {
+declare const global: PersonalGlobal;
+
+export class User {
     id: number;
     name: string;
 
     constructor(participant: Participant) {
-        this.id = participant.id
+        this.id = participant.id;
         this.name = participant.name;
     }
 
@@ -34,7 +36,7 @@ class User {
             .pipe(
                 flatMap(conversation => from(conversation.participants)),
                 map(participant => [new User(participant)]),
-                reduce((prev: Participants, current: Participants, index: number, array: Participants) => {
+                reduce((prev: Participants, current: Participants, index: number) => {
                     let currentParticipant : Participant = current[0];
 
                     // If not found
@@ -96,7 +98,7 @@ class User {
     // }
 
     /**
-     * 
+     *
     //  * @param {array} ids The IDs of the users to get information about.
     //  */
     // static getUserInfos(ids) {
@@ -144,4 +146,4 @@ class User {
     // }
 }
 
-module.exports = User;
+export default User;

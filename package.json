@@ -3,31 +3,36 @@
   "version": "1.0.0",
   "description": "Works with Facebook Messenger to aid you in messaging a lot of people.",
   "main": "src/driver.js",
+  "scripts": {
+    "start": "node dist/driver.js",
+    "build": "tsc",
+    "clean": "rm -rf dist && mkdir dist",
+    "serve": "npm run build && npm start",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "nodemon --config nodemon.config.json",
+    "watch:serve": "node --inspect -r ts-node/register src/driver.ts"
+  },
   "dependencies": {
-    "airtable": "^0.5.8",
+    "airtable": "^0.7.1",
     "ajv": "6.5.5",
-    "axios": "^0.18.0",
+    "axios": "^0.19.0",
     "dotenv": "^6.1.0",
     "facebook-chat-api": "^1.6.1",
     "moment": "^2.23.0",
     "readline": "^1.3.0",
     "rxjs": "^6.3.3",
     "rxjs-compat": "^6.3.3",
-    "table": "^5.1.0",
-    "winston": "^3.1.0"
+    "table": "^5.4.6",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-flow": "^6.23.0",
-    "flow-bin": "^0.91.0",
-    "flow-typed": "^2.5.1"
-  },
-  "scripts": {
-    "start": "node dist/driver.js",
-    "build": "babel src/ -d dist/",
-    "serve": "npm run build && npm start",
-    "flow": "flow",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "jest": "^24.8.0",
+    "node-ts": "^5.0.1",
+    "nodemon": "^1.19.1",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.0.2",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.3"
   },
   "keywords": [
     "facebook",
