@@ -1,11 +1,9 @@
-// @flow
-
-const { zip } = require('rxjs');
-const { Subject }           = require('rxjs/Rx');
-const { multicast, flatMap, tap }         = require('rxjs/operators');
-const fbapi      = require('./datasources/index');
-const logger     = require('./logger');
-const { table }  = require('table');
+import { zip } from 'rxjs';
+import { Subject }           from 'rxjs/Rx';
+import { multicast, flatMap, tap }         from 'rxjs/operators';
+import fbapi      from './datasources/index';
+import logger     from './logger';
+import { table }  from 'table';
 
 const FBConversation = require('./models/FBConversation');
 const User = require('./models/User');
@@ -18,12 +16,12 @@ let mssgr = {
 fbapi.login({ logLevel: 'error', loginRequired: false }).subscribe(api => {
     mssgr.fbapi = api;
 
-    let conversations$ : Subject = FBConversation.fetchAll(50, {useCache: false })
+    let conversations$ = FBConversation.fetchAll(50, {useCache: false })
         .pipe(multicast(() => new Subject()));
 
     let users$ = conversations$.pipe(flatMap(User.collect));
 
-    zip(conversations$, users$).subscribe((set) => {
+    zip(conversations$, users$).subscribe((set: any) => {
         const conversations = set[0];
         const users = set[1];
 
@@ -77,23 +75,23 @@ function displayMenu() {
     let data = [
         ['Keycode', 'Description'],
         [
-            'refresh', 
+            'refresh',
             'Refreshes the list of users, conversations, and googlesheets messages.'
         ],
         [
-            'view X', 
+            'view X',
             'Views the list of `users`, `conversations`, or `messages`.'
         ],
         [
-            'review', 
+            'review',
             'Presents a table-view of the target messages to send out. This is configured from Google Sheets.'
         ],
         [
-            'send', 
+            'send',
             'Reviews the target messages and send them.'
         ]
     ];
-    
+
     let output = table(data);
     console.log(output);
 }
