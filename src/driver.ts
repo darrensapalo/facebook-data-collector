@@ -1,17 +1,17 @@
-import logger from "./logger";
 
 import { FacebookDatasource } from './datasources/facebook';
-import { shareReplay, publish, mergeMap, toArray } from 'rxjs/operators';
+import { shareReplay, publish, mergeMap, toArray, tap } from 'rxjs/operators';
 import FBConversation from '@models/FBConversation';
 import User from './models/User';
-import { zip, ConnectableObservable, from } from 'rxjs';
+import { ConnectableObservable, from } from 'rxjs';
 import { ConversationService } from './services/ConversationService';
 import { AirtableService } from './services/AirtableService';
+import express from 'express';
 
 require("dotenv").config();
 
-
-function main() {
+exports.facebookDataCollector = (request: express.Request, response: express.Response) {
+  const type = request.params.type;
 
   const fb = new FacebookDatasource();
 
@@ -20,43 +20,48 @@ function main() {
     loginRequired: false
   }).pipe(shareReplay(1));
 
-  const airtableService = new AirtableService();
+  switch (type) {
+    case "add_users":
+      const airtableService = new AirtableService();
 
-  facebookApi$.subscribe(api => {
+      facebookApi$.subscribe(api => {
 
-    const conversationService = new ConversationService(api);
+        const conversationService = new ConversationService(api);
 
-    let conversations$ = conversationService.fetchAll(50, { useCache: false }).pipe(
-      publish()
-    ) as ConnectableObservable<FBConversation[]>;
+        let conversations$ = conversationService.fetchAll(50, { useCache: false }).pipe(
+          publish()
+        ) as ConnectableObservable<FBConversation[]>;
 
-    let users$ = conversations$.pipe(mergeMap(User.collect));
+        let users$ = conversations$.pipe(mergeMap(User.collect));
 
-    const addUsersFromPastConversations$ = users$.pipe(
-      mergeMap(users => from(users)),
-      mergeMap(user => airtableService.addUser(user)),
-      toArray()
-    );
+        const addUsersFromPastConversations$ = users$.pipe(
+          tap(users => console.log("Found " + users.length + " users!")),
+          mergeMap(users => from(users)),
+          mergeMap(user => airtableService.addUser(user)),
+          toArray()
+        );
 
-    addUsersFromPastConversations$.subscribe(console.log);
+        addUsersFromPastConversations$.subscribe(users => {
+          response.status(200).json(users);
+        }, error => response.status(500).json(error));
+      });
 
-    //   zip(conversations$, users$).subscribe(
-    //     (set: any) => {
-    //       const conversations = set[0];
-    //       const users = set[1];
+      break;
+    case "send_messages":
+      response.status(200).send("send messages");
+      break;
 
-    //       logger.info(`Conversations found: ${conversations.length}`);
-    //       logger.info(`Users found: ${users.length}`);
-    //     },
-    //     err => {
-    //       logger.error("Oof.");
-    //       logger.error(err);
-    //     }
-    //   );
+    case "get_conversations":
+      facebookApi$.subscribe(api => {
+        const conversationService = new ConversationService(api);
+        let conversations$ = conversationService.fetchAll(50, { useCache: false }).pipe(
+          publish()
+        ) as ConnectableObservable<FBConversation[]>;
 
-    //   conversations$.connect();
-
-  });
-};
-
-main();
+        conversations$.subscribe(conversations => {
+          response.status(200).json(conversations);
+        }, error => response.status(500).json(error));
+      });
+      break;
+  }
+}
