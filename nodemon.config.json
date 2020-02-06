@@ -1,5 +1,5 @@
 {
-    "exec": "npm run watch:serve",
+    "exec": "node --inspect -r ts-node/register src/driver.ts",
     "watch": ["./src"],
     "ext": "ts"
 }

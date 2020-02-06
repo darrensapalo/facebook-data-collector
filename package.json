@@ -9,10 +9,10 @@
     "clean": "rm -rf dist && mkdir dist",
     "serve": "npm run build && npm start",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "nodemon --config nodemon.config.json",
-    "watch:serve": "node --inspect -r ts-node/register src/driver.ts"
+    "watch": "nodemon --config nodemon.config.json"
   },
   "dependencies": {
+    "@types/airtable": "^0.5.7",
     "@types/table": "^4.0.7",
     "airtable": "^0.7.2",
     "ajv": "6.5.5",
