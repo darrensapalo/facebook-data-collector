@@ -26,8 +26,9 @@ See the [wiki](https://github.com/darrensapalo/facebook-data-collector/wiki).
 
 This uses the following libraries:
 
-1. [facebook-chat-api](https://github.com/Schmavery/facebook-chat-api/)
+1. [typescript](https://www.typescriptlang.org/)
 2. [rxjs](https://github.com/ReactiveX/rxjs)
-3. [moment.js](https://github.com/moment/moment)
-4. [dotenv](https://www.npmjs.com/package/dotenv)
-5. [flow](https://www.npmjs.com/package/flow-bin)
+3. [facebook-chat-api](https://github.com/Schmavery/facebook-chat-api/)
+4. [moment.js](https://github.com/moment/moment)
+5. [dotenv](https://www.npmjs.com/package/dotenv)
+
