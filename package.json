@@ -18,6 +18,7 @@
     "ajv": "6.5.5",
     "axios": "^0.19.2",
     "dotenv": "^6.2.0",
+    "express": "^4.17.1",
     "facebook-chat-api": "^1.7.0",
     "lodash.merge": ">=4.6.2",
     "moment": "^2.24.0",
@@ -29,6 +30,7 @@
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "@types/express": "^4.17.2",
     "jest": "^24.9.0",
     "node-ts": "^5.0.3",
     "nodemon": "^1.19.4",
