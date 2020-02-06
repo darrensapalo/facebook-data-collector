@@ -1,11 +1,12 @@
 import logger from "./logger";
 
 import { FacebookDatasource } from './datasources/facebook';
-import { shareReplay, publish, mergeMap } from "rxjs/operators";
+import { shareReplay, publish, mergeMap, toArray } from 'rxjs/operators';
 import FBConversation from '@models/FBConversation';
 import User from './models/User';
-import { zip, ConnectableObservable } from 'rxjs';
+import { zip, ConnectableObservable, from } from 'rxjs';
 import { ConversationService } from './services/ConversationService';
+import { AirtableService } from './services/AirtableService';
 
 require("dotenv").config();
 
@@ -19,6 +20,7 @@ function main() {
     loginRequired: false
   }).pipe(shareReplay(1));
 
+  const airtableService = new AirtableService();
 
   facebookApi$.subscribe(api => {
 
@@ -30,22 +32,31 @@ function main() {
 
     let users$ = conversations$.pipe(mergeMap(User.collect));
 
-    zip(conversations$, users$).subscribe(
-      (set: any) => {
-        const conversations = set[0];
-        const users = set[1];
-
-        logger.info(`Conversations found: ${conversations.length}`);
-        logger.info(`Users found: ${users.length}`);
-      },
-      err => {
-        logger.error("Oof.");
-        logger.error(err);
-      }
+    const addUsersFromPastConversations$ = users$.pipe(
+      mergeMap(users => from(users)),
+      mergeMap(user => airtableService.addUser(user)),
+      toArray()
     );
 
-    conversations$.connect();
+    addUsersFromPastConversations$.subscribe(console.log);
+
+    //   zip(conversations$, users$).subscribe(
+    //     (set: any) => {
+    //       const conversations = set[0];
+    //       const users = set[1];
+
+    //       logger.info(`Conversations found: ${conversations.length}`);
+    //       logger.info(`Users found: ${users.length}`);
+    //     },
+    //     err => {
+    //       logger.error("Oof.");
+    //       logger.error(err);
+    //     }
+    //   );
+
+    //   conversations$.connect();
+
   });
-}
+};
 
 main();
