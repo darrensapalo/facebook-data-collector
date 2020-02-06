@@ -13,6 +13,7 @@
     "watch:serve": "node --inspect -r ts-node/register src/driver.ts"
   },
   "dependencies": {
+    "@types/table": "^4.0.7",
     "airtable": "^0.7.2",
     "ajv": "6.5.5",
     "axios": "^0.19.2",
@@ -24,6 +25,7 @@
     "rxjs": "^6.5.4",
     "rxjs-compat": "^6.5.4",
     "table": "^5.4.6",
+    "tslint": "^6.0.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {
