@@ -1,0 +1,48 @@
+# # Use Dockerized infrastructure
+# sudo: false
+
+# # Use node_js environnement
+# language: node_js
+# node_js:
+#   - "10"
+
+# # Cache Gcloud SDK between commands
+# cache:
+#   yarn: true
+#   directories:
+#   - "$HOME/google-cloud-sdk/"
+
+# env:
+#   global:
+
+
+# install:
+#   - npm install
+
+# script:
+#   - npm test
+
+# before_deploy:
+#   - if [ ! -d "$HOME/google-cloud-sdk/bin" ]; then rm -rf $HOME/google-cloud-sdk; export CLOUDSDK_CORE_DISABLE_PROMPTS=1; curl https://sdk.cloud.google.com | bash > /dev/null; fi
+#   - source /home/travis/google-cloud-sdk/path.bash.inc
+#   - gcloud --quiet version
+#   - gcloud --quiet components update
+
+#   # use the decrypted service account credentials to authenticate the command line tool
+#   # get the encrypted variable names from travis cli: https://docs.travis-ci.com/user/encrypting-files/
+#   - openssl aes-256-cbc -K $encrypted_da7f2bf039f1_key -iv $encrypted_da7f2bf039f1_iv -in secrets.tar.enc -out secrets.tar -d
+#   - tar xvf secrets.tar
+#   - gcloud auth activate-service-account --key-file api-project.json
+#   - gcloud config set project api-project-1025423667957
+#   - tsc --build tsconfig.prod.json
+#   - ls
+
+# deploy:
+#   - provider: script
+#     script:
+#       # change PROJECT and REPO to the values from the cloud console: https://console.cloud.google.com/code/develop
+#       - gcloud beta functions deploy dota-2-games-to-google-calendar --source . --entry-point=parseDotaGames --trigger-http --verbosity=info
+
+#     skip_cleanup: true
+#     on:
+#       branch: master

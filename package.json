@@ -9,14 +9,16 @@
     "clean": "rm -rf dist && mkdir dist",
     "serve": "npm run build && npm start",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "nodemon --config nodemon.config.json",
-    "watch:serve": "node --inspect -r ts-node/register src/driver.ts"
+    "watch": "nodemon --config nodemon.config.json"
   },
   "dependencies": {
+    "@types/airtable": "^0.5.7",
+    "@types/table": "^4.0.7",
     "airtable": "^0.7.2",
     "ajv": "6.5.5",
     "axios": "^0.19.2",
     "dotenv": "^6.2.0",
+    "express": "^4.17.1",
     "facebook-chat-api": "^1.7.0",
     "lodash.merge": ">=4.6.2",
     "moment": "^2.24.0",
@@ -24,9 +26,11 @@
     "rxjs": "^6.5.4",
     "rxjs-compat": "^6.5.4",
     "table": "^5.4.6",
+    "tslint": "^6.0.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "@types/express": "^4.17.2",
     "jest": "^24.9.0",
     "node-ts": "^5.0.3",
     "nodemon": "^1.19.4",

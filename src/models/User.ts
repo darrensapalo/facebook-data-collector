@@ -1,11 +1,8 @@
-import {PersonalGlobal} from "../@types/global";
-
-type UserID = number;
 type Participant = { id: number, name: string };
 type Participants = Array<Participant>;
 
-import { Observable, from, of, pipe } from 'rxjs';
-import { map, flatMap, toArray, reduce, tap } from 'rxjs/operators';
+import { Observable, from, of } from 'rxjs';
+import { map, mergeMap, reduce, tap } from 'rxjs/operators';
 
 import logger from '../logger';
 import fs from 'fs';
@@ -14,8 +11,6 @@ import axios from 'axios';
 import FBConversation from './FBConversation';
 
 const verbose = true;
-
-declare const global: PersonalGlobal;
 
 export class User {
     id: number;
@@ -31,12 +26,12 @@ export class User {
      *
      * @returns {Observable<Array<UserID>>} - Emits a list of `UserID`s from the last `size` conversations.
      */
-    static collect(conversations: Array<FBConversation>) : Observable<Array<User>>{
+    static collect(conversations: FBConversation[]): Observable<User[]>{
         return from(conversations)
             .pipe(
-                flatMap(conversation => from(conversation.participants)),
+                mergeMap(conversation => from(conversation.participants)),
                 map(participant => [new User(participant)]),
-                reduce((prev: Participants, current: Participants, index: number) => {
+                reduce((prev: Participants, current: Participants) => {
                     let currentParticipant : Participant = current[0];
 
                     // If not found
@@ -46,26 +41,25 @@ export class User {
                     }
 
                     return prev;
-                }),
-                tap(User.persistData)
+                })
             );
     }
 
-    static persistData(users: Array<User>) : void {
+    // static persistData(users: Array<User>) : void {
 
-        if (verbose) {
-            global.mssgr.log.verbose('Attempting to persist [User] data to cache.');
-        }
-        const fileDestination = './static/users.json';
-        const fileData = JSON.stringify(users, null, 2);
+    //     if (verbose) {
+    //         logger.verbose('Attempting to persist [User] data to cache.');
+    //     }
+    //     const fileDestination = './static/users.json';
+    //     const fileData = JSON.stringify(users, null, 2);
 
-        fs.writeFileSync(fileDestination, fileData);
+    //     fs.writeFileSync(fileDestination, fileData);
 
-        if (verbose) {
-            global.mssgr.log.verbose('Successfully persisted [User] data.');
-        }
+    //     if (verbose) {
+    //         logger.verbose('Successfully persisted [User] data.');
+    //     }
 
-    }
+    // }
 
 
     static getAll() : Observable<Array<User>> {
@@ -73,8 +67,8 @@ export class User {
         let source$ = from(axios.get(API.AirTable.LectorsAndCommentators));
 
         return source$.pipe(
-            flatMap(of),
-            map(lector => [])
+            mergeMap(of),
+            map(() => [])
         );
 
     }

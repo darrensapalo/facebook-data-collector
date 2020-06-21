@@ -1,94 +1,67 @@
-import { ConnectableObservable, zip } from "rxjs";
-import {flatMap, publish, tap} from "rxjs/operators";
-import fbapi from "./datasources/index";
-import logger from "./logger";
-import { table } from "table";
 
-import FBConversation from "./models/FBConversation";
-import User from "./models/User";
-import {PersonalGlobal} from "./@types/global";
+import { FacebookDatasource } from './datasources/facebook';
+import { shareReplay, publish, mergeMap, toArray, tap } from 'rxjs/operators';
+import FBConversation from '@models/FBConversation';
+import User from './models/User';
+import { ConnectableObservable, from } from 'rxjs';
+import { ConversationService } from './services/ConversationService';
+import { AirtableService } from './services/AirtableService';
+import express from 'express';
 
-let mssgr = {
-  fbapi: null,
-  log: logger
-};
+require("dotenv").config();
 
-fbapi.login({ logLevel: "error", loginRequired: false }).subscribe(api => {
-  mssgr.fbapi = api;
+exports.facebookDataCollector = (request: express.Request, response: express.Response) {
+  const type = request.params.type;
 
-  let conversations$ = FBConversation.fetchAll(50, { useCache: false }).pipe(
-    publish()
-  ) as ConnectableObservable<FBConversation[]>;
+  const fb = new FacebookDatasource();
 
-  let users$ = conversations$.pipe(flatMap(User.collect));
+  const facebookApi$ = fb.login({
+    logLevel: "error",
+    loginRequired: false
+  }).pipe(shareReplay(1));
 
-  zip(conversations$, users$).subscribe(
-    (set: any) => {
-      const conversations = set[0];
-      const users = set[1];
+  switch (type) {
+    case "add_users":
+      const airtableService = new AirtableService();
 
-      logger.info(`Conversations found: ${conversations.length}`);
-      logger.info(`Users found: ${users.length}`);
-    },
-    err => {
-      logger.error("Oof.");
-      logger.error(err);
-    }
-  );
+      facebookApi$.subscribe(api => {
 
-  conversations$.connect();
-});
+        const conversationService = new ConversationService(api);
 
-// const User = require('./models/User');
-// const { FBConversation } = require('./models/FBConversation');
+        let conversations$ = conversationService.fetchAll(50, { useCache: false }).pipe(
+          publish()
+        ) as ConnectableObservable<FBConversation[]>;
 
-declare const global: PersonalGlobal;
-global.mssgr = mssgr;
+        let users$ = conversations$.pipe(mergeMap(User.collect));
 
+        const addUsersFromPastConversations$ = users$.pipe(
+          tap(users => console.log("Found " + users.length + " users!")),
+          mergeMap(users => from(users)),
+          mergeMap(user => airtableService.addUser(user)),
+          toArray()
+        );
 
-function refresh() {
-  // let updateUsers = () => {
-  //     return FBConversation.fetchUserIDList()
-  //         .flatMap(User.getUserInfos)
-  // }
-  //
-  // let updateConversations = () => {
-  //     return FBConversation.fetchAll()
-  // }
-  //
-  // let updateGoogleMessages = () => {
-  //     return GoogleSheets.fetchGSMessages()
-  // }
-  // return Rx.Observable.zip(
-  //     updateUsers(),
-  //     updateConversations(),
-  //     updateGoogleMessages()
-  // )
-}
+        addUsersFromPastConversations$.subscribe(users => {
+          response.status(200).json(users);
+        }, error => response.status(500).json(error));
+      });
 
-function initialize() {
-  return fbapi.login().pipe(
-    tap(api => {
-      logger.verbose(api);
-    })
-  );
-}
+      break;
+    case "send_messages":
+      response.status(200).send("send messages");
+      break;
 
-function displayMenu() {
-  let data = [
-    ["Keycode", "Description"],
-    [
-      "refresh",
-      "Refreshes the list of users, conversations, and googlesheets messages."
-    ],
-    ["view X", "Views the list of `users`, `conversations`, or `messages`."],
-    [
-      "review",
-      "Presents a table-view of the target messages to send out. This is configured from Google Sheets."
-    ],
-    ["send", "Reviews the target messages and send them."]
-  ];
+    case "get_conversations":
+      facebookApi$.subscribe(api => {
+        const conversationService = new ConversationService(api);
+        let conversations$ = conversationService.fetchAll(50, { useCache: false }).pipe(
+          publish()
+        ) as ConnectableObservable<FBConversation[]>;
 
-  let output = table(data);
-  console.log(output);
+        conversations$.subscribe(conversations => {
+          response.status(200).json(conversations);
+        }, error => response.status(500).json(error));
+      });
+      break;
+  }
 }
