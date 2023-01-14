@@ -15,7 +15,7 @@
   "dependencies": {
     "airtable": "^0.7.2",
     "ajv": "6.5.5",
-    "axios": "^0.19.2",
+    "axios": "^0.21.2",
     "dotenv": "^6.2.0",
     "facebook-chat-api": "^1.7.0",
     "lodash.merge": ">=4.6.2",
