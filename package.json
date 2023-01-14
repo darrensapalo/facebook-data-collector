@@ -13,7 +13,7 @@
     "watch:serve": "node --inspect -r ts-node/register src/driver.ts"
   },
   "dependencies": {
-    "airtable": "^0.7.2",
+    "airtable": "^0.11.6",
     "ajv": "6.5.5",
     "axios": "^0.21.2",
     "dotenv": "^6.2.0",
